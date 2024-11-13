@@ -79,3 +79,98 @@ group:tempgrp:rwx		#effective:r-x
 mask::r-x
 other::r-x
 
+mask устанавливает эффективные максимальные права доступа для всех пользователей и групп, прописанных в ACL
+Пользователеи сохраняют свои настройки в ACL, но работают только с правами, определенными настройками mask
+
+Изменение mask:
+student@alexander-VirtualBox:~/StickyBit$ setfacl -m m:rwx ../StickyBit/
+
+Исключение пользователя или группы из ACL:
+student@alexander-VirtualBox:~/StickyBit$ setfacl -x u:tmp3 ./ (для пользователя)
+
+student@alexander-VirtualBox:~/StickyBit$ setfacl -x g:tmpgrp ./ (для групп)
+
+Сброс всех ACL:
+student@alexander-VirtualBox:~/StickyBit$ setfacl -b u:tmp3 ./
+
+Установка наследования ACL по умолчанию:
+student@alexander-VirtualBox:~/StickyBit$ setfacl -m d:u:tmp3:rwx ./
+
+
+getfacl Fold2
+# file: Fold2
+# owner: student
+# group: student
+user::rwx
+user:tmp3:rwx
+group::rwx
+mask::rwx
+other::r-x
+default:user::rwx
+default:user:tmp3:rwx
+default:group::rwx
+default:mask::rwx
+default:other::r-x
+
+Пример применения ACL по умолчанию:
+
+student@alexander-VirtualBox:~/ACL$ getfacl PvtF/
+# file: PvtF/
+# owner: student
+# group: student
+user::rwx
+group::rwx
+other::r--
+default:user::rwx
+default:user:tmp3:r-x
+default:group::rwx
+default:mask::rwx
+default:other::r-x
+
+student@alexander-VirtualBox:~/ACL$ setfacl -m u:tmp4:r-x PvtF/
+student@alexander-VirtualBox:~/ACL$ su tmp3
+Пароль:
+tmp3@alexander-VirtualBox:/home/student/ACL$ cd PvtF/
+bash: cd: PvtF/: Отказано в доступе
+tmp3@alexander-VirtualBox:/home/student/ACL$ exit
+exit
+student@alexander-VirtualBox:~/ACL$ su tmp4
+Пароль:
+tmp4@alexander-VirtualBox:/home/student/ACL$ cd PvtF/
+tmp4@alexander-VirtualBox:/home/student/ACL/PvtF$ exit
+exit
+student@alexander-VirtualBox:~/ACL$ mkdir F1
+student@alexander-VirtualBox:~/ACL$ cd PvtF/
+student@alexander-VirtualBox:~/ACL/PvtF$ mkdir F1
+student@alexander-VirtualBox:~/ACL/PvtF$ touch f1
+student@alexander-VirtualBox:~/ACL/PvtF$ ls -l
+итого 4
+-rw-rw-r--+ 1 student student    0 ноя 13 11:33 f1
+drwxrwxr-x+ 2 student student 4096 ноя 13 11:33 F1
+student@alexander-VirtualBox:~/ACL/PvtF$ getfacl F1
+# file: F1
+# owner: student
+# group: student
+user::rwx
+user:tmp3:r-x
+group::rwx
+mask::rwx
+other::r-x
+default:user::rwx
+default:user:tmp3:r-x
+default:group::rwx
+default:mask::rwx
+default:other::r-x
+
+student@alexander-VirtualBox:~/ACL/PvtF$ getfacl f1
+# file: f1
+# owner: student
+# group: student
+user::rw-
+user:tmp3:r-x                   #effective:r--
+group::rwx                      #effective:rw-
+mask::rw-
+other::r--
+
+student@alexander-VirtualBox:~/ACL/PvtF$
+
